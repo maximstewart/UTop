@@ -1,0 +1,6 @@
+{
+    "keybindings": {
+        "help":       "F1",
+        "guake_key":  "<Shift><Control>space"
+    }
+}
