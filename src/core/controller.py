@@ -50,6 +50,8 @@ class Controller(ControllerData):
         for child in children:
             grid.remove(child)
 
+        row = 0
+        col = 0
         for item in group_items:
             title   = item["title"]
             if not item["exec"] in ("", None):
@@ -75,7 +77,14 @@ class Controller(ControllerData):
                 button.set_always_show_image(True)
 
             button.show_all()
-            grid.add(button)
+            grid.attach(button, col, row, 1, 1)
+
+            col += 1
+            if col == 4:
+                col = 0
+                row += 1
+
+            # grid.add(button)
 
     def test_exec(self, widget, _command):
         command = _command.split("%")[0]
