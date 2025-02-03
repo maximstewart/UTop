@@ -38,45 +38,25 @@ class Controller(ControllerData):
 
 
     # NOTE: To be filled out after app data is actually working...
-    def search_for_entry(self, widget, data=None):
+    def search_for_entry(self, widget, data = None):
         ...
 
     def set_list_group(self, widget):
         group       = widget.get_label().strip()
         group_items = self.core_widget.get_group(group)
-        grid        = self.builder.get_object("programListBttns")
+        grid        = self.builder.get_object("program_list_bttns")
 
         children = grid.get_children()
         for child in children:
+            child.disconnect(child.sig_id)
             grid.remove(child)
 
-        row = 0
-        col = 0
+        row   = 0
+        col   = 0
+        icon_theme = Gtk.IconTheme.get_default()
+
         for item in group_items:
-            title   = item["title"]
-            if not item["exec"] in ("", None):
-                exec = item["exec"]
-            else:
-                exec = item["tryExec"]
-
-            button = Gtk.Button(label=title)
-            button.connect("clicked", self.test_exec, exec)
-            if self.show_image:
-                if os.path.exists(item["icon"]):
-                    pixbuf = GdkPixbuf.PixbufAnimation.new_from_file(item["icon"]) \
-                                                        .get_static_image() \
-                                                        .scale_simple(64, 64, \
-                                                        GdkPixbuf.InterpType.BILINEAR)
-
-                    icon = Gtk.Image.new_from_pixbuf(pixbuf)
-                else:
-                    gio_icon = Gio.Icon.new_for_string(item["icon"])
-                    icon = Gtk.Image.new_from_gicon(gio_icon, 64)
-
-                button.set_image(icon)
-                button.set_always_show_image(True)
-
-            button.show_all()
+            button = self.generate_app_button(icon_theme, item)
             grid.attach(button, col, row, 1, 1)
 
             col += 1
@@ -84,7 +64,54 @@ class Controller(ControllerData):
                 col = 0
                 row += 1
 
-            # grid.add(button)
+
+
+    def generate_app_button(self, icon_theme, item):
+        title    = item["title"]
+        exec_str = item[
+            "exec" if not item["exec"] in ("", None) else "tryExec"
+        ]
+
+        button = Gtk.Button(label = title)
+        button.sig_id = button.connect("clicked", self.test_exec, exec_str)
+
+        if self.show_image:
+            _icon = item["icon"]
+
+            if os.path.exists(_icon):
+                icon = self.get_icon_from_path(_icon)
+            else:
+                icon = self.get_icon_from_gio(icon_theme, _icon)
+
+            button.set_image(icon)
+            button.set_always_show_image(True)
+
+        button.show_all()
+        return button
+
+    def get_icon_from_path(self, path):
+        pixbuf = GdkPixbuf.PixbufAnimation.new_from_file(path) \
+                                            .get_static_image() \
+                                            .scale_simple(32, 32, \
+                                            GdkPixbuf.InterpType.BILINEAR)
+
+        return Gtk.Image.new_from_pixbuf(pixbuf)
+
+
+    def get_icon_from_gio(self, icon_theme, icon_name):
+        gio_icon = Gio.Icon.new_for_string(icon_name)
+        pixbuf   = None
+
+        # Note:  https://docs.gtk.org/gtk3/enum.IconSize.html
+        for i in [6, 5, 3, 4, 2, 1]:
+            icon_info = Gtk.IconTheme.lookup_by_gicon(icon_theme, gio_icon, i, Gtk.IconLookupFlags.FORCE_REGULAR)
+            if not icon_info: continue
+
+            pixbuf = icon_info.load_icon().scale_simple(32, 32, 2) # 2 = BILINEAR and is best by default
+            break
+
+        return Gtk.Image.new_from_pixbuf( pixbuf )
+
 
     def test_exec(self, widget, _command):
         command = _command.split("%")[0]
@@ -111,7 +138,7 @@ class Controller(ControllerData):
         self.setup_toggle_event()
         return self.core_widget
 
-    def on_hide_window(self, data=None):
+    def on_hide_window(self, data = None):
         """Handle a request to hide/show the window"""
         if not self.window.get_property('visible'):
             self.window.show()

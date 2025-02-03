@@ -30,7 +30,7 @@ class Window(Gtk.ApplicationWindow):
         self._setup_signals()
         self._load_widgets(args, unknownargs)
 
-        self.show_all()
+        self.show()
 
 
     def _setup_styling(self):

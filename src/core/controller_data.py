@@ -25,12 +25,14 @@ def display_manager():
 
 if display_manager() == 'X11':
     try:
+        #gi.require_version('Keybinder', '3.24')
         gi.require_version('Keybinder', '3.0')
         from gi.repository import Keybinder
         Keybinder.init()
         Keybinder.set_use_cooked_accelerators(False)
-    except (ImportError, ValueError):
-        logger.debug('Unable to load Keybinder module. This means the hide_window shortcut will be unavailable')
+    except (ImportError, ValueError) as e:
+        logger.warning(e)
+        logger.warning('Unable to load Keybinder module. This means the hide_window shortcut will be unavailable')
 
 
 
@@ -52,14 +54,16 @@ class ControllerData:
 
     def setup_toggle_event(self) -> None:
         self.window = settings.get_builder().get_object(f"{app_name.lower()}")
+        hidebound   = None
 
         # Attempt to grab a global hotkey for hiding the window.
         # If we fail, we'll never hide the window, iconifying instead.
         if self.guake_key and display_manager() == 'X11':
             try:
                 hidebound = Keybinder.bind(self.guake_key, self.on_hide_window)
-            except (KeyError, NameError):
-                pass
+            except (KeyError, NameError) as e:
+                logger.warning(e)
+                print( repr(e) )
 
             if not hidebound:
                 logger.debug('Unable to bind hide_window key, another instance/window has it.')

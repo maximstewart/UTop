@@ -10,8 +10,8 @@ gi.require_version('Wnck', '3.0')
 from gi.repository import Gtk
 from gi.repository import Wnck
 from gi.repository import GObject
+from gi.repository import GdkPixbuf
 from xdg.DesktopEntry import DesktopEntry
-
 
 # Application imports
 from .desktop_parsing.app_finder import find_apps
@@ -23,7 +23,7 @@ class CoreWidget(Gtk.Box):
     def __init__(self):
         super(CoreWidget, self).__init__()
         self.builder     = settings.get_builder()
-        self.time_label  = self.builder.get_object("timeLabel")
+        self.time_label  = self.builder.get_object("time_lbl")
 
         self.orientation = 1  # 0 = horizontal, 1 = vertical
 
@@ -48,6 +48,9 @@ class CoreWidget(Gtk.Box):
         }
         apps = find_apps()
         self.fill_menu_objects(apps)
+
+        search_programs_entry = self.builder.get_object("search_programs_entry")
+        search_programs_entry.hide()
 
 
     def fill_menu_objects(self, apps=[]):
@@ -86,10 +89,18 @@ class CoreWidget(Gtk.Box):
             else:
                 group = "Other"
 
-            self.menu_objects[group].append( {"title":  title,   "groups": groups,
-                                    "comment": comment, "exec": mainExec,
-                                    "tryExec": tryExec, "fileName": fPath.split("/")[-1],
-                                    "filePath": fPath, "icon": icon})
+            self.menu_objects[group].append(
+                {
+                    "title":  title,
+                    "groups": groups,
+                    "comment": comment,
+                    "exec": mainExec,
+                    "tryExec": tryExec,
+                    "fileName": fPath.split("/")[-1],
+                    "filePath": fPath,
+                    "icon": icon
+                }
+            )
 
     def get_group(self, group):
         return self.menu_objects[group]
@@ -107,8 +118,8 @@ class CoreWidget(Gtk.Box):
     def _load_widgets(self):
         widget_grid_container = self.builder.get_object("widget_grid_container")
 
-        timeLabelEveBox = self.builder.get_object("timeLabelEveBox")
-        timeLabelEveBox.connect("button_release_event", self._toggle_cal_popover)
+        time_lbl_eve_box = self.builder.get_object("time_lbl_eve_box")
+        time_lbl_eve_box.connect("button_release_event", self._toggle_cal_popover)
 
         widget_grid_container.set_vexpand(True)
         widget_grid_container.set_hexpand(True)
@@ -126,9 +137,9 @@ class CoreWidget(Gtk.Box):
         pager = Wnck.Pager.new()
 
         if self.orientation == 0:
-            self.builder.get_object('taskBarWorkspacesHor').add(pager)
+            self.builder.get_object('taskbar_workspaces_hor').add(pager)
         else:
-            self.builder.get_object('taskBarWorkspacesVer').add(pager)
+            self.builder.get_object('taskbar_workspaces_ver').add(pager)
 
         pager.set_hexpand(True)
         pager.show()
@@ -140,9 +151,9 @@ class CoreWidget(Gtk.Box):
         tasklist.set_grouping(1)       # 0 = mever group, 1 auto group, 2 = always group
 
         if self.orientation == 0:
-            self.builder.get_object('taskBarButtonsHor').add(tasklist)
+            self.builder.get_object('taskbar_bttns_hor').add(tasklist)
         else:
-            self.builder.get_object('taskBarButtonsVer').add(tasklist)
+            self.builder.get_object('taskbar_bttns_ver').add(tasklist)
 
         tasklist.set_vexpand(True)
         tasklist.set_include_all_workspaces(False)
@@ -162,12 +173,12 @@ class CoreWidget(Gtk.Box):
         GObject.timeout_add(59000, self.display_clock)
 
 
-    def _close_popup(self, widget, data=None):
+    def _close_popup(self, widget, data = None):
         widget.hide()
 
     def _toggle_cal_popover(self, widget, eve):
-        calendarPopup = self.builder.get_object('calendarPopup')
-        if (calendarPopup.get_visible() == False):
+        calendar_popup = self.builder.get_object('calendar_popup')
+        if (calendar_popup.get_visible() == False):
             calendarWid = self.builder.get_object('calendarWid')
             now         = datetime.now()
             timeStr     = now.strftime("%m/%d/%Y")
@@ -177,6 +188,6 @@ class CoreWidget(Gtk.Box):
             year        = int(parts[2])
             calendarWid.select_day(day)
             calendarWid.select_month(month, year)
-            calendarPopup.popup()
+            calendar_popup.popup()
         else:
-            calendarPopup.popdown()
+            calendar_popup.popdown()
