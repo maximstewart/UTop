@@ -113,7 +113,12 @@ class CategoryWidget(Gtk.Grid):
 
     def _do_exec(self, widget, _command):
         command = _command.split("%")[0]
-        subprocess.Popen(command.split(), start_new_session=True, stdout=None, stderr=None)
+        subprocess.Popen(
+            command.split(),
+            start_new_session = True,
+            stdout = None,
+            stderr = None
+        )
 
     def clear_children(self, app_list: [] = []):
         children = self.get_children()

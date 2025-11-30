@@ -82,5 +82,12 @@ class SearchCommandWidget(Gtk.SearchEntry):
     def _handle_enter(self, widget):
         if self.mode != "/c": return
 
+        subprocess.Popen(
+            self.request.split(),
+            start_new_session = True,
+            stdout = None,
+            stderr = None
+        )
+
     def query_all_categories(self):
         event_system.emit("query-all-categories", (self.request,))
