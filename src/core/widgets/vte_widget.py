@@ -68,19 +68,7 @@ class VteWidget(Vte.Terminal):
             None, None,
         )
 
-        # Note:  '-->:' is used as a delimiter to split on to get command actual.
-        #              !!!  DO NOT REMOVE UNLESS CODE UPDATED ACCORDINGLY  !!!
-        startup_cmds = [
-            "env -i /bin/bash --noprofile --norc\n",
-            "export TERM='xterm-256color'\n",
-            "export LC_ALL=C\n",
-            "export XDG_RUNTIME_DIR='/run/user/1000'\n",
-            "export DISPLAY=:0\n",
-            f"export XAUTHORITY='{settings_manager.get_home_path()}/.Xauthority'\n",
-            f"\nexport HOME='{settings_manager.get_home_path()}'\n",
-            "export PS1='\\h@\\u \\W -->: '\n",
-            "clear\n"
-        ]
+        startup_cmds = []
 
         for i in startup_cmds:
             self.run_command(i)
@@ -93,6 +81,9 @@ class VteWidget(Vte.Terminal):
         if not text.encode() == "\r".encode(): return
 
         text, attributes = self.get_text()
+
+        if not text: return
+
         lines            = text.strip().splitlines()
         command_ran      = None
 
