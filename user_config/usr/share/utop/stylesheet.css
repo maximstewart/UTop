@@ -1,13 +1,30 @@
 /* ----  Make most desired things base transparent  ---- */
-/* ----  Make most desired things base transparent  ---- */
 popover,
 popover > box,
+notebook,
+header,
+stack,
+scrolledwindow,
+viewport {
+    background: rgba(0, 0, 0, 0.0);
+    color: rgba(255, 255, 255, 1);
+}
+
+tab {
+    color: rgba(255, 255, 255, 1);
+}
+
+tab:checked {
+    border-bottom-color: rgba(125, 125, 125, 1);
+}
+
+
 .main-window,
 .base-container,
 .body-container,
 .center-container,
 .header-container,
-.footer-containerm,
+.footer-container,
 .left-containerm,
 .right-container {
     background: rgba(0, 0, 0, 0.0);
@@ -15,7 +32,7 @@ popover > box,
 }
 
 .base-container {
-    background: rgba(0, 0, 0, 0.64);
+    background: rgba(39, 43, 52, 0.64);
     margin: 10px;
 }
 

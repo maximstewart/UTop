@@ -1,9 +1,10 @@
 {
     "keybindings": {
-        "help"           : "F1",
-        "guake_key"      : "<Shift><Control>KP_Insert",
-        "focus-search"   : "<Control>s",
-        "focus-apps"     : "<Control>a",
-        "focus-terminal" : "<Control>t"
+        "help"                   : "F1",
+        "guake_key"              : "<Shift><Control>KP_Insert",
+        "focus-search"           : "<Control>s",
+        "focus-apps"             : "<Control>a",
+        "focus-terminal"         : "<Control>t",
+        "load-interactive-debug" : "<Control>d"
     }
 }

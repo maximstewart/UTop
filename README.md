@@ -15,3 +15,4 @@ sudo apt-get install python3.8 wget python3-setproctitle python3-gi python3-pyxd
 # Images
 ![1 UTop single pane. ](images/pic1.png)
 ![2 UTop pane filled. ](images/pic2.png)
+![2 UTop terminal tab. ](images/pic3.png)
