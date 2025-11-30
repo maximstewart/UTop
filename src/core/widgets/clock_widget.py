@@ -5,7 +5,7 @@ from datetime import datetime
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from gi.repository import GObject
+from gi.repository import GLib
 
 # Application imports
 
@@ -77,7 +77,7 @@ class ClockWidget(Gtk.EventBox):
         self._update_face()
         self.add(self.label)
 
-        GObject.timeout_add(59000, self._update_face)
+        GLib.timeout_add(59000 , self._update_face)
 
     def _update_face(self):
         dt_now         = datetime.now()
@@ -86,6 +86,8 @@ class ClockWidget(Gtk.EventBox):
         time_str       = hours_mins_sec + "\n" + month_day_year
 
         self.label.set_label(time_str)
+
+        return True
 
     def _toggle_cal_popover(self, widget, eve):
         if (self.calendar.get_visible() == True):

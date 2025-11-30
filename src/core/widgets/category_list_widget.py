@@ -19,10 +19,7 @@ class CategoryListWidget(Gtk.ButtonBox):
     def __init__(self):
         super(CategoryListWidget, self).__init__()
 
-        self.ctx                  = self.get_style_context()
-        self.dir_watchers: []     = []
-
-        self.active_category: str = 'Accessories'
+        self.active_category   = None
         self.category_dict: {} = {
             "Accessories": [],
             "Multimedia":  [],
@@ -37,32 +34,43 @@ class CategoryListWidget(Gtk.ButtonBox):
             "Other":       []
         }
 
+        self.dir_watchers: []  = []
+
         self._setup_styling()
         self._setup_signals()
         self._subscribe_to_events()
         self._load_widgets()
-        self.fill_menu_objects()
+        self._fill_menu_objects()
 
         self.show_all()
 
 
     def _setup_styling(self):
         self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.ctx.add_class("category-list-widget")
+        ctx = self.get_style_context()
+        ctx.add_class("category-list-widget")
 
     def _setup_signals(self):
         self._load_dir_watchers()
 
     def _subscribe_to_events(self):
+        event_system.subscribe("get-active-category", self.get_active_category)
         event_system.subscribe("refresh-active-category", self.refresh_active_category)
+        event_system.subscribe("query-all-categories", self.query_all_categories)
 
     def _load_widgets(self):
         for category in self.category_dict.keys():
             button = Gtk.Button(label = category)
-            button.connect("clicked", self.set_active_category)
+            button.connect("clicked", self._set_active_category)
             button.show()
 
             self.add(button)
+
+            if category == "Accessories":
+                self.active_category = button
+                self.active_category.get_style_context().add_class("active-category")
+
+        self.category_dict["All"] = []
 
     def _reset_dir_watchers(self):
         self._clear_dir_watchers()
@@ -99,16 +107,16 @@ class CategoryListWidget(Gtk.ButtonBox):
             GLib.idle_add(self._reload_meu)
 
     def _reload_meu(self):
-        for group in self.category_dict:
-            self.category_dict[group].clear()
+        for category in self.category_dict:
+            self.category_dict[category].clear()
 
-        self.fill_menu_objects()
+        self._fill_menu_objects()
         event_system.emit(
             "load-active-category",
-            (self.category_dict[ self.active_category ],)
+            (self.category_dict[ self.active_category.get_label() ],)
         )
 
-    def fill_menu_objects(self, apps: [] = []):
+    def _fill_menu_objects(self, apps: [] = []):
         if not apps:
             apps = find_apps()
 
@@ -147,29 +155,49 @@ class CategoryListWidget(Gtk.ButtonBox):
             else:
                 group = "Other"
 
-            self.category_dict[group].append(
-                {
-                    "title":  title,
-                    "groups": groups,
-                    "comment": comment,
-                    "exec": mainExec,
-                    "tryExec": tryExec,
-                    "fileName": fPath.split("/")[-1],
-                    "filePath": fPath,
-                    "icon": icon
-                }
-            )
+            entry = {
+                "title":  title,
+                "groups": groups,
+                "comment": comment,
+                "exec": mainExec,
+                "tryExec": tryExec,
+                "fileName": fPath.split("/")[-1],
+                "filePath": fPath,
+                "icon": icon
+            }
 
-    def set_active_category(self, button):
-        self.active_category = button.get_label()
+            self.category_dict["All"].append(entry)
+            self.category_dict[group].append(entry)
+
+    def _set_active_category(self, button):
+        self.active_category.get_style_context().remove_class("active-category")
+        self.active_category = button
+        self.active_category.get_style_context().add_class("active-category")
+
         event_system.emit(
             "load-active-category",
-            (self.category_dict[ self.active_category ],)
+            (self.category_dict[ self.active_category.get_label() ],)
         )
+
+    def query_all_categories(self, query: str):
+        self.active_category.get_style_context().remove_class("active-category")
+
+        filtered_group = []
+        for app in self.category_dict["All"]:
+            if (
+                query in app["title"].lower()or \
+                query in app["comment"].lower()
+            ):
+                filtered_group.append(app)
+
+        event_system.emit("load-active-category", (filtered_group,))
+
+    def get_active_category(self):
+        return self.active_category
 
     def refresh_active_category(self):
+        self.active_category.get_style_context().add_class("active-category")
         event_system.emit(
             "load-active-category",
-            (self.category_dict[ self.active_category ],)
+            (self.category_dict[ self.active_category.get_label() ],)
         )
-

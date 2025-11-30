@@ -6,6 +6,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 # Application imports
+from ..widgets.search_command_widget import SearchCommandWidget
 from ..widgets.tab_widget import TabWidget
 
 
@@ -40,4 +41,5 @@ class CenterContainer(Gtk.Box):
         ...
 
     def _load_widgets(self):
+        self.add(SearchCommandWidget())
         self.add(TabWidget())
