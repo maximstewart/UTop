@@ -1,6 +1,8 @@
 {
     "keybindings": {
-        "help":       "F1",
-        "guake_key":  "<Shift><Control>space"
+        "help"           : "F1",
+        "guake_key"      : "<Shift><Control>KP_Insert",
+        "focus-apps"     : "<Control>a",
+        "focus-terminal" : "<Control>t"
     }
 }

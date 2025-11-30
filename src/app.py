@@ -1,11 +1,13 @@
 # Python imports
+from contextlib import suppress
+import signal
 import os
-import time
 
 # Lib imports
 
 # Application imports
-from utils.ipc_server import IPCServer
+from libs.debugging import debug_signal_handler
+from libs.ipc_server import IPCServer
 from core.window import Window
 
 
@@ -13,27 +15,53 @@ from core.window import Window
 class AppLaunchException(Exception):
     ...
 
-class ControllerStartExceptiom(Exception):
-    ...
 
 
-class Application(IPCServer):
-    ''' Create Settings and Controller classes. Bind signal to Builder. Inherit from Builtins to bind global methods and classes.'''
+class Application:
+    """ docstring for Application. """
 
-    def __init__(self, args, unknownargs):
+    def __init__(self):
         super(Application, self).__init__()
-        if not settings.is_trace_debug():
-            try:
-                self.create_ipc_listener()
-            except Exception:
-                ...
 
-            if not self.is_ipc_alive:
-                for arg in unknownargs + [args.new_tab,]:
-                    if os.path.isdir(arg):
-                        message = f"FILE|{arg}"
-                        self.send_ipc_message(message)
+        if not settings_manager.is_trace_debug():
+            self.load_ipc()
 
-                raise AppLaunchException(f"{app_name} IPC Server Exists: Will send path(s) to it and close...")
+        self.setup_debug_hook()
 
-        Window(args, unknownargs)
+
+    def run(self):
+        win = Window()
+        win.start()
+
+    def load_ipc(self):
+        args, \
+        unknownargs = settings_manager.get_starting_args()
+        ipc_server  = IPCServer()
+
+        self.ipc_realization_check(ipc_server)
+        if not ipc_server.is_ipc_alive:
+            for arg in unknownargs + [args.new_tab,]:
+                if os.path.isfile(arg):
+                    message = f"FILE|{arg}"
+                    ipc_server.send_ipc_message(message)
+
+            raise AppLaunchException(f"{APP_NAME} IPC Server Exists: Have sent path(s) to it and closing...")
+
+    def ipc_realization_check(self, ipc_server):
+        try:
+            ipc_server.create_ipc_listener()
+        except Exception:
+            ipc_server.send_test_ipc_message()
+
+        with suppress(Exception):
+            ipc_server.create_ipc_listener()
+
+    def setup_debug_hook(self):
+        # Typically: ValueError: signal only works in main thread
+        with suppress(ValueError):
+            # kill -SIGUSR2 <pid> from Linux/Unix or SIGBREAK signal from Windows
+            signal.signal(
+                vars(signal).get("SIGBREAK") or vars(signal).get("SIGUSR2"),
+                debug_signal_handler
+            )
+

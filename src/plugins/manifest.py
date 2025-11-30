@@ -1,5 +1,6 @@
 # Python imports
-import os, json
+import os
+import json
 from os.path import join
 
 # Lib imports
@@ -14,13 +15,14 @@ class ManifestProcessor(Exception):
 
 
 class Plugin:
-    path: str       = None
-    name: str       = None
-    author: str     = None
-    version: str    = None
-    support: str    = None
-    requests:{}     = None
-    reference: type = None
+    path: str        = None
+    name: str        = None
+    author: str      = None
+    version: str     = None
+    support: str     = None
+    requests:{}      = None
+    reference: type  = None
+    pre_launch: bool = False
 
 
 class ManifestProcessor:
@@ -45,19 +47,29 @@ class ManifestProcessor:
         plugin.support  = self._manifest["support"]
         plugin.requests = self._manifest["requests"]
 
+        if "pre_launch" in self._manifest.keys():
+            plugin.pre_launch = True if self._manifest["pre_launch"] == "true" else False
+
         return plugin
 
     def get_loading_data(self):
         loading_data = {}
         requests     = self._plugin.requests
-        keys         = requests.keys()
 
-        if "pass_events" in keys:
+        if "pass_events" in requests:
             if requests["pass_events"] in ["true"]:
                 loading_data["pass_events"] = True
 
-        if "bind_keys" in keys:
+        if "pass_ui_objects" in requests:
+            if isinstance(requests["pass_ui_objects"], list):
+                loading_data["pass_ui_objects"] = [ self._builder.get_object(obj) for obj in requests["pass_ui_objects"] ]
+
+        if "bind_keys" in requests:
             if isinstance(requests["bind_keys"], list):
                 loading_data["bind_keys"] = requests["bind_keys"]
 
         return self._plugin, loading_data
+
+    def is_pre_launch(self):
+        return self._plugin.pre_launch
+

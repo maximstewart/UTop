@@ -1,3 +1,3 @@
 """
-    Gtk Bound Signal Module
+    Core Package
 """
