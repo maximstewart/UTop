@@ -22,3 +22,8 @@ popover > box,
 .clock-widget * {
     font-size: 20px;
 }
+
+.active-category {
+    background: rgba(0, 124, 0, 0.64);
+    color: rgba(255, 255, 255, 1);
+}
