@@ -23,13 +23,14 @@ class Application:
     def __init__(self):
         super(Application, self).__init__()
 
-        if not settings_manager.is_trace_debug():
-            self.load_ipc()
-
         self.setup_debug_hook()
 
 
     def run(self):
+        if not settings_manager.is_trace_debug():
+            if not self.load_ipc():
+                return
+
         win = Window()
         win.start()
 
@@ -39,13 +40,20 @@ class Application:
         ipc_server  = IPCServer()
 
         self.ipc_realization_check(ipc_server)
-        if not ipc_server.is_ipc_alive:
-            for arg in unknownargs + [args.new_tab,]:
-                if os.path.isfile(arg):
-                    message = f"FILE|{arg}"
-                    ipc_server.send_ipc_message(message)
+        if ipc_server.is_ipc_alive:
+            return True
 
-            raise AppLaunchException(f"{APP_NAME} IPC Server Exists: Have sent path(s) to it and closing...")
+        logger.warning(f"{app_name} IPC Server Exists: Have sent path(s) to it and closing...")
+        for arg in unknownargs + [args.new_tab,]:
+            if os.path.isfile(arg):
+                message = f"FILE|{arg}"
+                ipc_server.send_ipc_message(message)
+
+            if os.path.isdir(arg):
+                message = f"DIR|{arg}"
+                ipc_server.send_ipc_message(message)
+
+        return False
 
     def ipc_realization_check(self, ipc_server):
         try:

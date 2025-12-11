@@ -11,7 +11,6 @@ from gi.repository import Gdk
 from gi.repository import GLib
 
 # Application imports
-from libs.status_icon import StatusIcon
 from core.controllers.base_controller import BaseController
 
 
@@ -28,7 +27,6 @@ class Window(Gtk.ApplicationWindow):
         super(Window, self).__init__()
         settings_manager.set_main_window(self)
 
-        self._status_icon = None
         self._controller  = None
         self.guake_key    = settings_manager.get_guake_key()
         self.hidefunc     = None
@@ -79,7 +77,6 @@ class Window(Gtk.ApplicationWindow):
             self.set_interactive_debugging(True)
 
         self._controller  = BaseController()
-        self._status_icon = StatusIcon()
         if not self._controller:
             raise ControllerStartException("BaseController exited and doesn't exist...")
 
@@ -95,10 +92,6 @@ class Window(Gtk.ApplicationWindow):
         return 'X11'
 
     def _set_size_constraints(self):
-        # _window_x   = settings.config.main_window_x
-        # _window_y   = settings.config.main_window_y
-        # self.move(_window_x, _window_y - 28)
-
         _min_width  = settings.config.main_window_min_width
         _min_height = settings.config.main_window_min_height
         _width      = settings.config.main_window_width

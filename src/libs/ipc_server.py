@@ -61,8 +61,12 @@ class IPCServer(Singleton):
                 conn       = listener.accept()
                 start_time = time.perf_counter()
                 self._handle_ipc_message(conn, start_time)
+            except EOFError as e:
+                logger.debug( repr(e) )
             except Exception as e:
                 logger.debug( repr(e) )
+            finally:
+                conn.close()
 
         listener.close()
 
@@ -88,7 +92,7 @@ class IPCServer(Singleton):
                 break
 
 
-            if msg in ['close connection', 'close server']:
+            if msg in ['close connection', 'close server', 'Empty Data...']:
                 conn.close()
                 break
 
